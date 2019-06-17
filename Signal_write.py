@@ -1,26 +1,37 @@
-"""扫描标签的时候直接读取字符串传入scala，如果在5秒内读取到的字符串是和原来一样的，不重新播放，如果5秒后或者扫瞄到了其他的标签，立即更新播放"""
-
-from time import time
 import serial
 
-ser = serial.Serial('COM4', 115200, timeout=None)
-ser.close()
-ser.open()
-data = ser.read(39)
-cur_time = time()
-cur = repr(data)[17:-1]
-print(cur)
-# item.Value = tuple(cur)
 
-# for i in range(30):
-#     ser.close()
-#     ser.open()
-#     data = ser.read(39)
-#     pre_time = time()
-#     pre = repr(data)[17:-1]
-#     if pre == cur and (pre_time - cur_time) <= 5:
-
-
-    # with open('data.txt','a') as f:
-    #     f.add(current)
-    # print(type(current))
+ser = serial.Serial('COM3', 115200, timeout=1)
+# 实例化串口
+i = 0
+while True:
+    i += 1
+    print(i)
+    ser.close()
+    ser.open()
+    re = ser.readlines()
+    # 无标签拿起
+    if len(re) == 2:
+        file = open("rfid.txt", 'w')
+        file.write("default")
+        file.close()
+        print("default")
+    else:
+        data = []
+        for string in re:
+            if "ID" in repr(string):
+                temp = repr(string).split(':')[1][:-5]
+                if temp not in data:
+                    data.append(temp)
+        # 多标签拿起
+        if len(data) > 1 or len(data) == 0:
+            file = open("rfid.txt", 'w')
+            file.write("default")
+            file.close()
+            print("default")
+        # 单标签拿起
+        else:
+            file = open("rfid.txt", 'w')
+            file.write(data[0])
+            file.close()
+            print(data)
